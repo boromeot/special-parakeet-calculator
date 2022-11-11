@@ -1,6 +1,5 @@
 import './App.css';
 import { useReducer } from 'react';
-// import evaluate from './evaluate';
 import { evaluate } from 'mathjs';
 
 function Opperand({ symbol, dispatch }) {
@@ -91,8 +90,8 @@ const ACTIONS = {
   DEL : 'del',
   EVALUATE: 'evaluate',
   PAREN : 'paren',
-  DECIMAL : 'decimal'
-}
+  DECIMAL : 'decimal',
+};
 
 const OPERATORS = new Set(['+', '-', '/', '*']);
 
@@ -243,7 +242,7 @@ function Calculator() {
       <ClearEntry symbol={'CE'} dispatch={dispatch} />
       <Clear symbol={'C'} dispatch={dispatch} />
       <Del symbol={'⌫'} dispatch={dispatch} />
-      <button>x^y</button>
+      <Opperator symbol={'^'} dispatch={dispatch} />
       <Parentheses symbol={'('} dispatch={dispatch} />
       <Parentheses symbol={')'} dispatch={dispatch} />
       <Opperator symbol={'/'} dispatch={dispatch} />
