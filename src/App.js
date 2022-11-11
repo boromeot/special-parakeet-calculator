@@ -107,8 +107,8 @@ function reducer(state, { type, payload }) {
       const newState = {...state, decimalCount:0, res:[]}
       let input = [...state.input, ...state.res, payload.symbol];
       if (state.res.length === 0) {
-        if (OPERATORS.has(state.input.at(-1))) {
-          newState['input'] = [...state.input.slice(0, state.input.length -1), payload.symbol];
+        if (OPERATORS.has(state.input.at(-1))) { // If input ending with valid operator
+          newState['input'] = [...state.input.slice(0, state.input.length -1), payload.symbol]; // Modify the operator inplace
           return newState;
         } 
         if (state.input.at(-1) === ')') {
