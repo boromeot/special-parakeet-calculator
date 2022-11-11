@@ -1,6 +1,7 @@
 import './App.css';
 import { useReducer } from 'react';
-import evaluate from './evaluate';
+// import evaluate from './evaluate';
+import { evaluate } from 'mathjs';
 
 function Opperand({ symbol, dispatch }) {
   return (
@@ -108,7 +109,7 @@ function reducer(state, { type, payload }) {
       let input = [...state.input, ...state.res, payload.symbol];
       if (state.res.length === 0) {
         if (OPERATORS.has(state.input.at(-1))) { // If input ending with valid operator
-          newState['input'] = [...state.input.slice(0, state.input.length -1), payload.symbol]; // Modify the operator inplace
+          newState['input'] = [...state.input.slice(0, state.input.length -1), payload.symbol]; // Modify the last operator inplace
           return newState;
         } 
         if (state.input.at(-1) === ')') {
@@ -162,6 +163,7 @@ function reducer(state, { type, payload }) {
       }
     }
     case ACTIONS.PAREN: {
+      let newState = {...state, decimalCount:0}
       let input = state.input.slice();
       let res = state.res.slice();
       let openParenCount = state.openParenCount;
@@ -170,14 +172,15 @@ function reducer(state, { type, payload }) {
         return state;
       }
 
-      if (payload.symbol === ')' && state.res.length > 0) {
+      if (payload.symbol === ')' && state.res.length > 0) { // If ')' && res has something
         openParenCount--;
+        newState['res'] = [];
         if (state.input.at(-1) === ')') {
-          input = [...state.input, '*', ...state.res, payload.symbol];
-        } else {
-          input = [...state.input, ...state.res, payload.symbol];
+          newState['input'] = [...state.input, '*', ...state.res, payload.symbol];
+          return newState;
         }
-        res = [];
+        newState['input'] = [...state.input, ...state.res, payload.symbol];
+        return newState;
       }
 
       if (payload.symbol === '(') {
@@ -214,8 +217,8 @@ function reducer(state, { type, payload }) {
       return state;
     }
     case ACTIONS.EVALUATE: {
-      let res = evaluate([...state.input, ...state.res]).split('');
-
+      let number = evaluate([...state.input, ...state.res].join(''));
+      let res = String(number).split('');
       return {
         ...state,
         input : [],
