@@ -1,6 +1,6 @@
 import './App.css';
 import { useReducer } from 'react';
-import { evaluate, pi } from 'mathjs';
+import { evaluate} from 'mathjs';
 
 function Opperand({ symbol, dispatch }) {
   return (
@@ -93,7 +93,7 @@ const ACTIONS = {
   DECIMAL : 'decimal',
 };
 
-const OPERATORS = new Set(['+', '-', '/', '*']);
+const OPERATORS = new Set(['+', '-', '/', '*', '^']);
 
 function reducer(state, { type, payload }) {
   switch (type) {
@@ -174,8 +174,13 @@ function reducer(state, { type, payload }) {
       if (payload.symbol === ')' && state.res.length > 0) { // If ')' && res has something
         openParenCount--;
         newState['res'] = [];
+        newState['openParenCount'] = openParenCount;
         if (state.input.at(-1) === ')') {
           newState['input'] = [...state.input, '*', ...state.res, payload.symbol];
+          return newState;
+        }
+        if (state.res.length === 1 && state.res[0] === '.') {
+          newState['input'] = [...state.input, 0, payload.symbol];
           return newState;
         }
         newState['input'] = [...state.input, ...state.res, payload.symbol];
@@ -183,6 +188,7 @@ function reducer(state, { type, payload }) {
       }
 
       if (payload.symbol === '(') {
+        openParenCount++;
         if (state.res.length > 0 || state.input.at(-1) === ')') {
           if (state.res.length === 1 && state.res[0] === '.') {
             input = [...state.input, 0, '*', payload.symbol];
@@ -195,8 +201,8 @@ function reducer(state, { type, payload }) {
         } else {
           input = [...state.input, payload.symbol];
         }
-        openParenCount++;
       }
+
       return {
         ...state,
         input,
@@ -216,12 +222,36 @@ function reducer(state, { type, payload }) {
       return state;
     }
     case ACTIONS.EVALUATE: {
-      let number = evaluate([...state.input, ...state.res].join(''));
-      let res = String(number).split('');
+      let res = state.res.slice();
+      let input = state.input.slice();
+      let openParenCount = state.openParenCount;
+
+      if (res.length === 0) {
+        while(input.at(-1) === '(') {
+          openParenCount--;
+          input.pop();
+        }
+  
+        while(OPERATORS.has(input.at(-1))) {
+          input.pop();
+        }
+      }
+
+      if (state.res[0] === '.' && state.res.length === 1) {
+        res = [0];
+      }
+      for (let i = 0; i < openParenCount; i++) {
+        res.push(')');
+      }
+      console.log([...input, ...res]);
+      let number = evaluate([...input, ...res].join(''));
+      res = String(number).split('');
       return {
         ...state,
         input : [],
-        res
+        res,
+        openParenCount: 0,
+        decimalCount: 0,
       }
     }
     default:
