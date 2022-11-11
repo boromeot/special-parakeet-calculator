@@ -1,6 +1,6 @@
 import './App.css';
 import { useReducer } from 'react';
-import { evaluate } from 'mathjs';
+import { evaluate, pi } from 'mathjs';
 
 function Opperand({ symbol, dispatch }) {
   return (
@@ -238,7 +238,7 @@ function Calculator() {
         <div className='input'>{ input.join('') }</div>
         <div className='res'>{ res.join('') }</div>
       </div>
-      <button>π</button>
+      <button></button>
       <ClearEntry symbol={'CE'} dispatch={dispatch} />
       <Clear symbol={'C'} dispatch={dispatch} />
       <Del symbol={'⌫'} dispatch={dispatch} />
@@ -258,7 +258,7 @@ function Calculator() {
       <Opperand symbol={2} dispatch={dispatch} />
       <Opperand symbol={3} dispatch={dispatch} />
       <Opperator symbol={'+'} dispatch={dispatch} />
-      <button>+/-</button>
+      <button></button>
       <Opperand symbol={0} dispatch={dispatch} />
       <Decimal symbol={'.'} dispatch={dispatch} />
       <Equals symbol={'='} dispatch={dispatch} />
