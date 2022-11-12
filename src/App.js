@@ -126,17 +126,20 @@ function reducer(state, { type, payload }) {
       if (payload.symbol === '(') {
         openParenCount++;
         if (state.res.length > 0 || state.input.at(-1) === ')') {
+          newState['res'] = [];
           if (state.res.length === 1 && state.res[0] === '.') {
-            input = [...state.input, 0, '*', payload.symbol];
-          } else if (state.res.at(-1) === '.') {
-            input = [...state.input, state.res.slice(0, state.res.length - 1), '*', payload.symbol];
-          } else {
-            input = [...state.input, ...state.res, '*', payload.symbol];
+            newState['input'] = [...state.input, 0, '*', payload.symbol];
+            return newState;
+          } 
+          if (state.res.at(-1) === '.') {
+            newState['input'] = [...state.input, state.res.slice(0, state.res.length - 1), '*', payload.symbol];
+            return newState;
           }
-          res = [];
-        } else {
-          input = [...state.input, payload.symbol];
+          newState['input'] = [...state.input, ...state.res, '*', payload.symbol];
+          return newState;
         }
+        newState['input'] = [...state.input, payload.symbol];
+        return newState;
       }
 
       return {
