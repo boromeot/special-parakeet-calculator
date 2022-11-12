@@ -1,88 +1,10 @@
 import './App.css';
 import { useReducer } from 'react';
 import { evaluate} from 'mathjs';
+import { Opperand, Opperator, Parentheses, 
+  Clear, ClearEntry, Del, Decimal, Equals } from './Buttons';
 
-function Opperand({ symbol, dispatch }) {
-  return (
-    <button
-      onClick={() => dispatch({ type: ACTIONS.APPEND, payload: { symbol }})}
-    >
-      {symbol}
-    </button>
-  ) 
-}
-
-function Opperator({ symbol, dispatch }) {
-  return (
-    <button
-      onClick={() => dispatch({ type: ACTIONS.OPPERATE, payload: { symbol }})}
-    >
-      {symbol}
-    </button>
-  )
-}
-
-function Parentheses({ symbol, dispatch }) {
-  return (
-    <button
-      onClick={() => dispatch({ type: ACTIONS.PAREN, payload: { symbol }})}
-    >
-      { symbol }
-    </button>
-  )
-}
-
-function Clear({ symbol, dispatch }) {
-  return (
-    <button
-      onClick={() => dispatch({ type: ACTIONS.CLEAR, payload: { symbol }})}
-    >
-      {symbol}
-    </button>
-  )
-}
-
-function ClearEntry({ symbol, dispatch }) {
-  return (
-    <button
-      onClick={() => dispatch({ type: ACTIONS.CLEAR_ENTRY, payload: { symbol }})}
-    >
-      {symbol}
-    </button>
-  )
-}
-
-function Del({ symbol, dispatch }) {
-  return (
-    <button
-      onClick={() => dispatch({ type: ACTIONS.DEL, payload: { symbol }})}
-    >
-      {symbol}
-    </button>
-  )
-}
-
-function Decimal({ symbol, dispatch }) {
-  return (
-    <button
-      onClick={() => dispatch({ type: ACTIONS.DECIMAL, payload: { symbol }})}
-    >
-      {symbol}
-    </button>
-  ) 
-}
-
-function Equals({ symbol, dispatch }) {
-  return (
-    <button
-      onClick={() => dispatch({ type: ACTIONS.EVALUATE, payload: { symbol }})}
-    >
-      {symbol}
-    </button>
-  ) 
-}
-
-const ACTIONS = {
+export const ACTIONS = {
   APPEND : 'append',
   OPPERATE : 'opperate',
   CLEAR : 'clear',
@@ -98,6 +20,10 @@ const OPERATORS = new Set(['+', '-', '/', '*', '^']);
 function reducer(state, { type, payload }) {
   switch (type) {
     case ACTIONS.APPEND: {
+      if (state.overwrite) {
+        state.overwrite = false;
+        state.res = [];
+      }
       return {
         ...state,
         res: [...state.res, payload.symbol]
@@ -136,7 +62,7 @@ function reducer(state, { type, payload }) {
         res: []
       }
     }
-    case ACTIONS.CLEAR:
+    case ACTIONS.CLEAR: {
       return {
         ...state,
         input: [],
@@ -144,12 +70,14 @@ function reducer(state, { type, payload }) {
         openParenCount : 0,
         decimalCount: 0,
       }
-    case ACTIONS.CLEAR_ENTRY:
+    }
+    case ACTIONS.CLEAR_ENTRY: {
       return {
         ...state,
         res: [],
         decimalCount: 0,
       }
+    }
     case ACTIONS.DEL: {
       let decimalCount = state.decimalCount;
       if (state.res.at(-1) === '.') {
@@ -171,11 +99,11 @@ function reducer(state, { type, payload }) {
         return state;
       }
 
-      if (payload.symbol === ')' && state.res.length > 0) { // If ')' && res has something
+      if (payload.symbol === ')' ) { // If ')' && res has something
         openParenCount--;
         newState['res'] = [];
         newState['openParenCount'] = openParenCount;
-        if (state.input.at(-1) === ')') {
+        if (state.input.at(-1) === ')' && state.res.length > 0) {
           newState['input'] = [...state.input, '*', ...state.res, payload.symbol];
           return newState;
         }
@@ -183,8 +111,16 @@ function reducer(state, { type, payload }) {
           newState['input'] = [...state.input, 0, payload.symbol];
           return newState;
         }
-        newState['input'] = [...state.input, ...state.res, payload.symbol];
-        return newState;
+        if (state.res.length === 0 && openParenCount > 0) {
+          openParenCount--;
+          newState['openParenCount'] = openParenCount;
+          newState['input'] = [...state.input, 0, payload.symbol];
+          return newState;
+        }
+        if (state.res.length > 0) {
+          newState['input'] = [...state.input, ...state.res, payload.symbol];
+          return newState;
+        }
       }
 
       if (payload.symbol === '(') {
@@ -252,6 +188,7 @@ function reducer(state, { type, payload }) {
         res,
         openParenCount: 0,
         decimalCount: 0,
+        overwrite : true,
       }
     }
     default:
@@ -260,7 +197,7 @@ function reducer(state, { type, payload }) {
 }
 
 function Calculator() {
-  const [{ input, res }, dispatch] = useReducer(reducer, {input: [], res: [], openParenCount: 0, decimalCount: 0});
+  const [{ input, res }, dispatch] = useReducer(reducer, {input: [], res: [], openParenCount: 0, decimalCount: 0, overwrite: false});
 
   return (
     <div className='calculator'>
