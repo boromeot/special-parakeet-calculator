@@ -99,11 +99,11 @@ function reducer(state, { type, payload }) {
         return state;
       }
 
-      if (payload.symbol === ')' ) { // If ')' && res has something
+      if (payload.symbol === ')' && state.res.length > 0) { // If ')' && res has something
         openParenCount--;
         newState['res'] = [];
         newState['openParenCount'] = openParenCount;
-        if (state.input.at(-1) === ')' && state.res.length > 0) {
+        if (state.input.at(-1) === ')') {
           newState['input'] = [...state.input, '*', ...state.res, payload.symbol];
           return newState;
         }
@@ -111,35 +111,24 @@ function reducer(state, { type, payload }) {
           newState['input'] = [...state.input, 0, payload.symbol];
           return newState;
         }
-        if (state.res.length === 0 && openParenCount > 0) {
-          openParenCount--;
-          newState['openParenCount'] = openParenCount;
-          newState['input'] = [...state.input, 0, payload.symbol];
-          return newState;
-        }
-        if (state.res.length > 0) {
-          newState['input'] = [...state.input, ...state.res, payload.symbol];
-          return newState;
-        }
+        newState['input'] = [...state.input, ...state.res, payload.symbol];
+        return newState;
       }
 
       if (payload.symbol === '(') {
         openParenCount++;
         if (state.res.length > 0 || state.input.at(-1) === ')') {
-          newState['res'] = [];
           if (state.res.length === 1 && state.res[0] === '.') {
-            newState['input'] = [...state.input, 0, '*', payload.symbol];
-            return newState;
-          } 
-          if (state.res.at(-1) === '.') {
-            newState['input'] = [...state.input, state.res.slice(0, state.res.length - 1), '*', payload.symbol];
-            return newState;
+            input = [...state.input, 0, '*', payload.symbol];
+          } else if (state.res.at(-1) === '.') {
+            input = [...state.input, state.res.slice(0, state.res.length - 1), '*', payload.symbol];
+          } else {
+            input = [...state.input, ...state.res, '*', payload.symbol];
           }
-          newState['input'] = [...state.input, ...state.res, '*', payload.symbol];
-          return newState;
+          res = [];
+        } else {
+          input = [...state.input, payload.symbol];
         }
-        newState['input'] = [...state.input, payload.symbol];
-        return newState;
       }
 
       return {
@@ -164,8 +153,9 @@ function reducer(state, { type, payload }) {
       let res = state.res.slice();
       let input = state.input.slice();
       let openParenCount = state.openParenCount;
-
+      
       if (res.length === 0) {
+        console.log(input)
         while(input.at(-1) === '(') {
           openParenCount--;
           input.pop();
@@ -182,7 +172,6 @@ function reducer(state, { type, payload }) {
       for (let i = 0; i < openParenCount; i++) {
         res.push(')');
       }
-      console.log([...input, ...res]);
       let number = evaluate([...input, ...res].join(''));
       res = String(number).split('');
       return {
